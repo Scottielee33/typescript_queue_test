@@ -206,7 +206,6 @@ export const convertXLSXConvertApi = async (id: string, pdfData: string) => {
       return `${id}: connection Error ConvertAPI`
     } else{
       logger.info(`${id}: ${error}`)
-      console.log(error)
       return `${id}: something went wrong`
     }
   }

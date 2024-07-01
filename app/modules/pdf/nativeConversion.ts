@@ -60,19 +60,24 @@ const client = init()
  * @returns De gemaakte PDF
  */
 export const convertNativeDocument = async (source: FileObjectBuffer) => {
-  const { id, name } = source
-  logger.info(`${id}: ${name} - using native document conversion`)
-  const document = await uploadDocument(source)
-  await document.id
-  let res;
   try {
-    res = await getPDF(document.id);
-  } catch (error) {
-    res = ConvertInvalidNativeDocument(source,error);
-  }
-  await deleteSourceDocument(source, document.id)
+    const { id, name } = source
+    logger.info(`${id}: ${name} - using native document conversion`)
+    const document = await uploadDocument(source)
+    await document.id
+    let res;
+    try {
+      res = await getPDF(document.id);
+    } catch (error) {
+      res = ConvertInvalidNativeDocument(source,error);
+    }
+    await deleteSourceDocument(source, document.id)
 
-  return res
+    return res
+  } catch (error) {
+    logger.error(error)
+    throw error
+  }
 }
 
 /**

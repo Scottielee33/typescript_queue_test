@@ -5,16 +5,15 @@ import pino from 'pino'
 import readiness from './modules/readiness'
 import health from './modules/health'
 import pdf from './modules/pdf'
-import { connectToRabbitMQ, consumeFromRabbitMQ } from './modules/queue/queueService'
+import { connectToRabbitMQ, consumeFromRabbitMQPDF } from './modules/queue/queueService'
 
 dotenv.config()
 const logger = pino();
 
 (async () => {
   await connectToRabbitMQ();
-  consumeFromRabbitMQ('pdf', (message) => {
-    // Process the message here
-    console.log('Received message:', message);
+  consumeFromRabbitMQPDF('pdf', (message) => {
+    logger.info(`Received message from queue: ${JSON.stringify(message)}`);
   });
 })();
 

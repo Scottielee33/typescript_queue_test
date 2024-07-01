@@ -5,10 +5,11 @@ import pino from 'pino';
 const logger = pino()
 
 let channel: amqp.Channel;
+const MQ_URL = process.env.MQ_URL || 'amqp://localhost';
 
 export async function connectToRabbitMQ() {
   try {
-    const connection = await amqp.connect('amqp://localhost');
+    const connection = await amqp.connect(MQ_URL);
     logger.info('Connected to RabbitMQ');
 
     channel = await connection.createChannel();
@@ -44,7 +45,7 @@ export async function sendToRabbitMQ(queue: string, message: object) {
   }
 }
 
-export async function consumeFromRabbitMQ(queue: string, callback: (message: object) => void) {
+export async function consumeFromRabbitMQPDF(queue: string, callback: (message: object) => void) {
   if (!channel) {
     logger.error('Channel is not initialized. Please connect to RabbitMQ first.');
     return;
@@ -53,15 +54,30 @@ export async function consumeFromRabbitMQ(queue: string, callback: (message: obj
   try {
     await channel.consume(queue, async (msg) => {
       if (msg !== null) {
-        logger.info(`Received From Queue: ${msg.content.toString()}`);
-        const message = JSON.parse(msg.content.toString());
-        await handleRequest(message);
-        callback(message);
-        channel.ack(msg);
+        try {
+          logger.info(`Received From Queue: ${msg.content.toString()}`);
+          let message = JSON.parse(msg.content.toString());
+          if (!message.attempts) {
+            message.attempts = 0;
+          }
+          message.attempts++;
+          if (message.attempts > 5) {
+            logger.error('Message failed after 5 attempts, not requeueing:', message);
+            channel.ack(msg);
+            return;
+          }
+          await handleRequest(message);
+          callback(message);
+          channel.ack(msg);
+        } catch (error) {
+          logger.error('Error handling message:', error);
+          // Requeue the message for later processing
+          channel.nack(msg, false, true);
+        }
       }
-    });
+    }, { noAck: false });
     logger.info(`Started consuming from queue: ${queue}`);
   } catch (error) {
-    logger.error('Error consuming message from RabbitMQ:', error);
+      logger.error('Error consuming message from RabbitMQ:', error);
   }
 }
