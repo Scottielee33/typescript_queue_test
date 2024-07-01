@@ -1,13 +1,13 @@
 {
-    "compilerOptions": {
-      "target": "ES6",
-      "module": "commonjs",
-      "esModuleInterop": true,
-      "outDir": "./dist",
-      "rootDir": "app/src",
-      "strict": true
-    },
-    "include": ["app/src/**/*.ts"],
-    "exclude": ["node_modules"]
+  "extends": "@tsconfig/node18/tsconfig.json",
+  "include": [
+    "app/**/*"
+  ],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "outDir": "dist/",
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "lib": ["ES2021", "DOM"] // add this line
   }
-  
+}
