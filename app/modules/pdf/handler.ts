@@ -40,7 +40,7 @@ const s3Client = new S3Client({ region })
  */
 export const handleRequest = async (request: Request) => {
   try {
-    logger.info(`${request.id}: validated request ${JSON.stringify(request)}`)
+    logger.info(`${request.id}: start processing request ${JSON.stringify(request)}`)
     const pdf = await handleConvertion(request)
     if (
       request.input.url.includes("https://loket.bunnik.nl") ||                              // Bunnik
