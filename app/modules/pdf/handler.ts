@@ -23,6 +23,7 @@ import {
 } from './localConversion'
 import { convertNativeDocument } from './nativeConversion'
 import { Request} from './request'
+import { IMessage } from '@stomp/stompjs'
 
 dotenv.config()
 
@@ -38,7 +39,8 @@ const s3Client = new S3Client({ region })
  * @async
  * @param request Het request
  */
-export const handleRequest = async (request: Request) => {
+export const handleRequest = async (requestQueue: IMessage) => {
+  const request = JSON.parse(requestQueue.body) as Request
   try {
     logger.info(`${request.id}: start processing request ${JSON.stringify(request)}`)
     const pdf = await handleConvertion(request)
@@ -85,6 +87,7 @@ export const handleRequest = async (request: Request) => {
     } else {
       upload(request, pdf)
     }
+    requestQueue.ack()
   } catch (err) {
     await catchHandleRequest(request, err)
   }

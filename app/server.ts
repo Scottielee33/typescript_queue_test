@@ -5,17 +5,12 @@ import pino from 'pino'
 import readiness from './modules/readiness'
 import health from './modules/health'
 import pdf from './modules/pdf'
-import { connectToRabbitMQ, consumeFromRabbitMQPDF } from './modules/queue/queueService'
+import { client } from './modules/queue/queueService'
 
 dotenv.config()
 const logger = pino();
 
-(async () => {
-  await connectToRabbitMQ();
-  consumeFromRabbitMQPDF('pdf', (message) => {
-    logger.info(`Received message from queue: ${JSON.stringify(message)}`);
-  });
-})();
+client.activate();
 
 const server = Hapi.server({
     port: 3000,

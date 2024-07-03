@@ -6,7 +6,7 @@ import { allConversionMethods } from './conversionMethods'
 import { Response } from './index.d'
 import { Request } from './request.d'
 import pino from 'pino'
-import { sendToRabbitMQ } from '../queue/queueService'
+import { sendMessageToQueue } from '../queue/queueService'
 
 const logger = pino()
 
@@ -27,7 +27,7 @@ const handlePdfRequest = async (request: Hapi.Request, h: Hapi.ResponseToolkit) 
       payload.id = uuidv4()
       payload.extension = mime.extension(payload.input.mimeType)
       payload.output.extension = "pdf"
-      await sendToRabbitMQ('pdf', payload)
+      await sendMessageToQueue(JSON.stringify(payload))
       return h.response().code(201)
     } else {
       const res: Response = {
